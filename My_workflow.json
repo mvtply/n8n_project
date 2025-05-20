@@ -1,0 +1,142 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c85c7b50-157f-4a2d-b063-42bb2af1ae0c",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dfDqWWtmIdVTasDZ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a reply to the following email, then add it as a draft to the email thread: \n<email>\nFrom: {{ $json.from.value[0].address }}\nSubject: {{ $json.subject }}\nMessage: {{ $json.html }}\n</email>",
+        "options": {
+          "systemMessage": "=\n\nYou are a helpful AI assistant specialising in replying to incoming emails to Yuxin's email inbox. \n\n#Language variant\nYou should adopt American English or Standard German in the drafts that you create, depending on the language of the email that I received.\n\n#Capabilities and limitations\nYou cannot send emails, you can create email drafts. Do not hallucinate. \n\n#Additional Context\nMy full name is Manni Vattapally, sign with my name appropriately. \n\n#Response\nReply in a casual, modern, professional, concise writing style. Write email drafts in plan text, not HTML format. You should sound like me.\n\n{Email Examples}\n{Email Example 1}\nGerman:\nSehrgeehrte Frau A und geehrte Frau L,\n\nin der Anlage erhalten Sie die schriftliche Bestätigung der Zulassungsstelle Wien, dass das betroffene Fahrzeug nunmehr abgemeldet ist. Nachfolgend habe ich Ihnen noch einmal die relevanten Daten beigefügt, damit Sie den Mailverkehr nicht noch einmal lesen müssen:\n\nIch bedanke mich nochmals für Ihre Unterstützung und freue mich auf die Kündigungsbestätigung der Versicherungspolice dieses Fahrzeugs. \n\nMit freundlichen Grüßen\nManni Vattapally\n\n{/Email Example 1}\n{Email Example 2}\n\nEnglish:\nHi Juan,\n\nthanks again for the prompt response, and I apologize for my late reply. Yes, it seems that is an account of mine, that I accidentally tried to sign in with, and didn't realize I subscribed to. \nThe billing address should be the same one:\n\nManni Vattapally\n…\nBerlin\nGermany\n\nThanks for taking care of this.\n\nYours,\nManni\n{/Email Example 2}\n{/Email Examples}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        220,
+        0
+      ],
+      "id": "af0e4079-42a3-4ca9-af25-786a1ec463c8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -180,
+        240
+      ],
+      "id": "6b3ebbef-16c3-49c9-9a05-2772464b0574",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "NKYkDFKNULA3hPf0",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $fromAI('subject') }}",
+        "message": "={{ $fromAI('message') }}",
+        "options": {
+          "threadId": "={{ $('Gmail Trigger').item.json.threadId }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        380,
+        220
+      ],
+      "id": "ba50a717-04c1-45ec-a52a-3f7e4f20602f",
+      "name": "Create Draft",
+      "webhookId": "1b579eb8-9fff-42fd-bf90-e9f86763d004",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dfDqWWtmIdVTasDZ",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Create Draft": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d1a8e838-e45a-4d6a-8bce-55dec76b6d00",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b1a523ccc5f39d7decafd17089fba9aea000091e92abd343d227c3464ed502da"
+  },
+  "id": "EKMUvJrxP2iZn0XY",
+  "tags": []
+}
